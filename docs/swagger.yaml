@@ -1,0 +1,213 @@
+basePath: /
+definitions:
+  models.Catalog:
+    properties:
+      mark:
+        type: string
+      model:
+        type: string
+      owner:
+        $ref: '#/definitions/models.Person'
+      regNum:
+        type: string
+      year:
+        type: integer
+    type: object
+  models.Patch:
+    properties:
+      mark:
+        type: string
+      model:
+        type: string
+      name:
+        type: string
+      patronymic:
+        type: string
+      regNum:
+        type: string
+      surname:
+        type: string
+      year:
+        type: integer
+    type: object
+  models.Person:
+    properties:
+      name:
+        type: string
+      patronymic:
+        type: string
+      surname:
+        type: string
+    type: object
+  service.ReqBody:
+    properties:
+      regNums:
+        items:
+          type: string
+        type: array
+    type: object
+  service.SuccessGetResponse:
+    properties:
+      cars:
+        items:
+          $ref: '#/definitions/models.Catalog'
+        type: array
+      message:
+        type: string
+    type: object
+  service.SuccessResponse:
+    properties:
+      badRegNums:
+        items:
+          type: string
+        type: array
+      errorResponse:
+        additionalProperties:
+          type: string
+        type: object
+      message:
+        type: string
+    type: object
+host: localhost:9092
+info:
+  contact: {}
+  description: Car info service.
+  title: Car info API
+  version: "1.0"
+paths:
+  /cars:
+    get:
+      description: GET information about a car by its registration number
+      parameters:
+      - description: Registration Number
+        in: query
+        name: regNum
+        type: string
+      - description: Mark of car
+        in: query
+        name: mark
+        type: string
+      - description: model of car
+        in: query
+        name: model
+        type: string
+      - description: Year of car
+        in: query
+        name: year
+        type: integer
+      - description: Lower limit of car definition
+        in: query
+        name: lyear
+        type: integer
+      - description: Top limit of car definition
+        in: query
+        name: tyear
+        type: integer
+      - description: Owner name
+        in: query
+        name: name
+        type: string
+      - description: Owner surname
+        in: query
+        name: surname
+        type: string
+      - description: Owner patronymic
+        in: query
+        name: patronymic
+        type: string
+      - description: 'Page '
+        in: query
+        name: page
+        type: integer
+      - description: Number of elements per page
+        in: query
+        name: pagesize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Information of cars by using filter
+          schema:
+            $ref: '#/definitions/service.SuccessGetResponse'
+        "400":
+          description: Incorrect filtering attributes
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: GET car by id
+      tags:
+      - cars
+    post:
+      consumes:
+      - application/json
+      description: Post information about a car by its registration number by using
+        external API
+      parameters:
+      - description: Request data
+        in: body
+        name: regNums
+        required: true
+        schema:
+          $ref: '#/definitions/service.ReqBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: All cars successfully added or some cars were added, but some
+            registration numbers were invalid.
+          schema:
+            $ref: '#/definitions/service.SuccessResponse'
+        "400":
+          description: Bad Request - All provided registration numbers were invalid.
+      summary: Post car by id in external API
+      tags:
+      - cars
+  /cars/{regnum}:
+    delete:
+      description: Delete information about a car by its registration number
+      parameters:
+      - description: Car Registration Number
+        in: path
+        name: regnum
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Successful deletion, no content returned
+        "404":
+          description: Resource not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete car id
+      tags:
+      - cars
+    patch:
+      consumes:
+      - application/json
+      description: Update information about a car by its registration number
+      parameters:
+      - description: Car Registration Number
+        in: query
+        name: regnum
+        required: true
+        type: string
+      - description: Patch data
+        in: body
+        name: jsonfile
+        schema:
+          $ref: '#/definitions/models.Patch'
+      responses:
+        "200":
+          description: Patch request was successful
+        "400":
+          description: Bad Request - wrong JSON format or update request failed
+      summary: Patch car by id
+      tags:
+      - cars
+swagger: "2.0"
